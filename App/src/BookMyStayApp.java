@@ -1,16 +1,34 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.Queue;
 
+// -------------------- Reservation --------------------
+class Reservation {
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+}
+
+// -------------------- Room Inventory --------------------
 class RoomInventory {
 
     private Map<String, Integer> roomAvailability;
 
     public RoomInventory() {
         roomAvailability = new HashMap<>();
-        initializeInventory();
-    }
-
-    private void initializeInventory() {
         roomAvailability.put("Single", 5);
         roomAvailability.put("Double", 3);
         roomAvailability.put("Suite", 2);
@@ -19,12 +37,9 @@ class RoomInventory {
     public Map<String, Integer> getRoomAvailability() {
         return roomAvailability;
     }
-
-    public void updateAvailability(String roomType, int count) {
-        roomAvailability.put(roomType, count);
-    }
 }
 
+// -------------------- Abstract Room --------------------
 abstract class Room {
     int beds;
     int size;
@@ -39,6 +54,7 @@ abstract class Room {
     abstract void display(int available);
 }
 
+// -------------------- Room Types --------------------
 class SingleRoom extends Room {
     SingleRoom() {
         super(1, 250, 1500.0);
@@ -48,9 +64,8 @@ class SingleRoom extends Room {
         System.out.println("Single Room:");
         System.out.println("Beds: " + beds);
         System.out.println("Size: " + size + " sqft");
-        System.out.println("Price per night: " + price);
-        System.out.println("Available: " + available);
-        System.out.println();
+        System.out.println("Price: " + price);
+        System.out.println("Available: " + available + "\n");
     }
 }
 
@@ -63,9 +78,8 @@ class DoubleRoom extends Room {
         System.out.println("Double Room:");
         System.out.println("Beds: " + beds);
         System.out.println("Size: " + size + " sqft");
-        System.out.println("Price per night: " + price);
-        System.out.println("Available: " + available);
-        System.out.println();
+        System.out.println("Price: " + price);
+        System.out.println("Available: " + available + "\n");
     }
 }
 
@@ -78,12 +92,34 @@ class SuiteRoom extends Room {
         System.out.println("Suite Room:");
         System.out.println("Beds: " + beds);
         System.out.println("Size: " + size + " sqft");
-        System.out.println("Price per night: " + price);
-        System.out.println("Available: " + available);
-        System.out.println();
+        System.out.println("Price: " + price);
+        System.out.println("Available: " + available + "\n");
     }
 }
 
+// -------------------- Booking Queue --------------------
+class BookingRequestQueue {
+
+    private Queue<Reservation> requestQueue;
+
+    public BookingRequestQueue() {
+        requestQueue = new LinkedList<>();
+    }
+
+    public void addRequest(Reservation reservation) {
+        requestQueue.offer(reservation);
+    }
+
+    public Reservation getNextRequest() {
+        return requestQueue.poll();
+    }
+
+    public boolean hasPendingRequests() {
+        return !requestQueue.isEmpty();
+    }
+}
+
+// -------------------- Room Search --------------------
 class RoomSearchService {
 
     public void searchAvailableRooms(
@@ -108,6 +144,7 @@ class RoomSearchService {
     }
 }
 
+// -------------------- Main Class --------------------
 public class BookMyStayApp {
 
     public static void main(String[] args) {
@@ -121,9 +158,22 @@ public class BookMyStayApp {
         Room suite = new SuiteRoom();
 
         RoomSearchService service = new RoomSearchService();
+        BookingRequestQueue bookingQueue = new BookingRequestQueue();
 
-        System.out.println("Room Search Results:\n");
+        // Add booking requests
+        bookingQueue.addRequest(new Reservation("Abhi", "Single"));
+        bookingQueue.addRequest(new Reservation("Subha", "Double"));
+        bookingQueue.addRequest(new Reservation("Vanmathi", "Suite"));
 
+        System.out.println("Available Rooms:\n");
         service.searchAvailableRooms(inventory, single, dbl, suite);
+
+        System.out.println("Processing Booking Requests:\n");
+
+        while (bookingQueue.hasPendingRequests()) {
+            Reservation r = bookingQueue.getNextRequest();
+            System.out.println("Booking for Guest: "
+                    + r.getGuestName() + " | Room: " + r.getRoomType());
+        }
     }
 }
